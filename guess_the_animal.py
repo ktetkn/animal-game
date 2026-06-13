@@ -16,8 +16,31 @@ class GuessTheAnimal:
 
     def create_default_tree(self):
         self.root = Node( "Ваше животное умеет летать?", True)
-        self.root.left = Node("кошка")
-        self.root.right = Node("голубь")
+        flying_question = Node("Живёт ли оно на фермах?", True)
+        self.root.right = flying_question
+        
+        # летающие
+        flying_question.left = Node("сокол")
+        flying_question.right = Node("курочка")
+        
+        not_flying_question = Node("Оно живет в воде?", True)
+        self.root.left = not_flying_question
+        
+        # водные
+        water_question = Node("Это рыба?", True)
+        not_flying_question.right = water_question
+        
+        water_question.left = Node("лягушка")
+        water_question.right = Node("щука")
+        
+        # наземные
+        land_question = Node("Это крупное животное?", True)
+        not_flying_question.left = land_question
+        
+        land_question.left = Node("кошка")
+        land_question.right = Node("слон")
+
+
 
     def play(self):
         current = self.root
