@@ -38,7 +38,7 @@ def execute_function(choice, game):
         game.play()
     elif choice == 2:
         while True:
-            print("Статистика по играм:\n")
+            print("\n     Статистика по играм:\n")
             game.print_tree()
             game.get_most_informative_questions()
             game.get_average_depth_analysis()
