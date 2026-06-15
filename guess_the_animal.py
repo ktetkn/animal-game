@@ -165,8 +165,7 @@ class GuessTheAnimal:
             return
         
         # для хранения глубины вопросов используем префиксные суммы
-        prefix_sums = []
-        prefix_sums.append(self.depths[0])
+        prefix_sums = [self.depths[0]]
         for i in range(1, len(self.depths)):
             prefix_sums.append(prefix_sums[i-1] + self.depths[i])
 
@@ -174,13 +173,15 @@ class GuessTheAnimal:
         print(f"Всего успешных игр: {len(self.depths)}")
         print(f"История глубин раундов: {self.depths}")
         
-        # среднее за все время
-        total_sum = prefix_sums[-1]
-        overall_avg = round(total_sum / len(self.depths))
+        overall_avg = round(prefix_sums[-1] / len(self.depths))
         print(f"Среднее количество шагов до угадывания: {overall_avg}")
 
-        # среднее за последние 3 игры
         if len(self.depths) >= 3:
-            last_3_games = self.depths[-3:]
-            last_avg = round(sum(last_3_games) / 3)
+            # случай когда игры 3
+            if len(self.depths) == 3:
+                sum_last_3 = prefix_sums[-1]
+            else: # > 3 игр
+                sum_last_3 = prefix_sums[-1] - prefix_sums[-4]
+                
+            last_avg = round(sum_last_3 / 3)
             print(f"Среднее количество шагов до угадывания за последние 3 игры: {last_avg}")
