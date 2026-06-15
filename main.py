@@ -1,7 +1,3 @@
-import sys
-import pandas as pd
-import os
-
 # Импортируем функции из других модулей
 from guess_the_animal import (GuessTheAnimal)
 

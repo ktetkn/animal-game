@@ -40,49 +40,51 @@ class GuessTheAnimal:
         land_question.left = Node("кошка")
         land_question.right = Node("слон")
 
-
-
     def play(self):
         current = self.root
         depth = 0
         while current:
             if current.is_question:
-                while True:
-                    current.ask_count += 1
-                    print()
-                    answer = input(f"{current.value} (да/нет/назад): ").lower()
-                    if answer == "назад":
-                        if not self.history.is_empty():
-                            current = self.history.pop()
-                            depth -= 1
-                        else:
-                            print("Вы уже в начале истории вопросов.")
-                        continue
+                current.ask_count += 1
+                print()
+                answer = input(f"{current.value} (да/нет/назад): ").lower()
+                
+                if answer == "назад":
+                    if not self.history.is_empty():
+                        current = self.history.pop()
+                        depth -= 1
+                    else:
+                        print("Вы уже в начале истории вопросов.")
+                    continue
+                
+                if answer in ["да", "д", "y", "yes", "1"]:
                     self.history.push(current)
                     depth += 1
-                    if answer in ["да", "д", "y", "yes", "1"]:
-                        current = current.right
-                        break
-                    elif answer in ["нет", "н", "n", "no", "0"]:
-                        current = current.left
-                        break
-                    else:
-                        print("Некорректный ответ!")
+                    current = current.right
+                elif answer in ["нет", "н", "n", "no", "0"]:
+                    self.history.push(current)
+                    depth += 1
+                    current = current.left
+                else:
+                    print("Некорректный ответ!")
+                    current.ask_count -= 1 
             else:
-                while True:
-                    print()
-                    answer = input(f"Это {current.value}? (да/нет): ").lower()
-                    if answer in ["да", "д", "y", "yes", "1"]:
-                        print("\nУра! Я угадал!\n")
-                        current.success_count += 1
-                        self.depths.append(depth)
-                        break
-                    elif answer in ["нет", "н", "n", "no", "0"]:
-                        self.learn(current)
-                        break
-                    else:
-                        print("Некорректный ответ!")
-                return
+                print()
+                answer = input(f"Это {current.value}? (да/нет): ").lower()
+                if answer in ["да", "д", "y", "yes", "1"]:
+                    print("\nУра! Я угадал!\n")
+                    current.success_count += 1  # засчита победы животному
+                    while not self.history.is_empty(): # подсчёт глубины
+                        parent_node = self.history.pop()
+                        parent_node.success_count += 1
+                        
+                    self.depths.append(depth)
+                    return
+                elif answer in ["нет", "н", "n", "no", "0"]:
+                    self.learn(current)
+                    return 
+                else:
+                    print("Некорректный ответ!")
 
     def learn(self, node):
         old_animal = node.value
@@ -102,6 +104,8 @@ class GuessTheAnimal:
                 break
             else:
                 print("Некорректный ответ!")
+        node.ask_count = 1
+        node.success_count = 1
         print("Спасибо! Теперь я знаю новое животное.\n")
 
     def print_tree(self, node=None, prefix="", is_left=None):
@@ -128,7 +132,6 @@ class GuessTheAnimal:
         if node.left:
             self.print_tree(node.left, prefix + ("    " if is_left == False else "    "), True)
     
-    
     def collect_questions(self, node, questions_list):
         '''
         рекурсивно собирает все вопросы
@@ -147,13 +150,11 @@ class GuessTheAnimal:
         all_questions = []
         self.collect_questions(self.root, all_questions)
         
-        sorted_questions = sorted(all_questions, key=lambda x: (x.success_count, -x.ask_count), reverse=True) # сортируем сначала по успешности, затем реверснуто по вопросам
-
+        sorted_questions = sorted(all_questions, key=lambda x: (x.success_count / x.ask_count if x.ask_count > 0 else 0, x.ask_count), reverse=True)
         print("\n   Наиболее эффективные вопросы:")
         for i, j in enumerate(sorted_questions, 1):
             rate = j.success_count / j.ask_count * 100 if j.ask_count > 0 else 0 # процент успешных угадываний
-            print(f"{i}. {rate}% {j.value} (Побед: {j.success_count}, Был задан: {j.ask_count})")
-
+            print(f"{i}. {rate:.1f}% {j.value} (Побед: {j.success_count}, Был задан: {j.ask_count})")
 
     def get_average_depth_analysis(self):
         '''
@@ -180,6 +181,6 @@ class GuessTheAnimal:
 
         # среднее за последние 3 игры
         if len(self.depths) >= 3:
-            last_sum = prefix_sums[-1] - prefix_sums[-4] if len(self.depths) > 3 else prefix_sums[-1]
-            last_avg = round(last_sum / min(3, len(self.depths)))
+            last_3_games = self.depths[-3:]
+            last_avg = round(sum(last_3_games) / 3)
             print(f"Среднее количество шагов до угадывания за последние 3 игры: {last_avg}")
